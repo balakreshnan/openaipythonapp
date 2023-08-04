@@ -1,0 +1,10 @@
+
+Flask
+langchain
+openai
+unstructured
+tiktoken
+faiss-cpu
+pypdf
+azure-storage-blob
+python-dotenv
