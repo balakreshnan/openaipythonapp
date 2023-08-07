@@ -178,7 +178,64 @@ def summary(filename="samplepdf1.pdf"):
 
     print(result)
 
-    return render_template("upload.html",result = result)
+    #return render_template("upload.html",result = result)
+    return result
+
+@app.route('/insights', methods=['POST', 'GET'])
+def insights():
+   print('Request for index page received')
+   return render_template('insights.html')
+
+@app.route('/insightsp', methods=['POST', 'GET'])
+def insightsp(filename="samplepdf1.pdf"):
+    filename = request.args.get('filename')
+
+        # Specificy a `.env` file containing key/value config values
+    basedir = path.abspath(path.dirname(__file__))
+    load_dotenv(path.join(basedir, '.env'))
+    
+    # General Config
+    OPENAI_API_TYPE = os.environ.get("OPENAI_API_TYPE")
+    OPENAI_API_VERSION = os.environ.get("OPENAI_API_VERSION")
+    OPENAI_API_BASE = os.environ.get("OPENAI_API_BASE")
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+    DEFAULT_EMBED_BATCH_SIZE = os.environ.get("DEFAULT_EMBED_BATCH_SIZE")
+    BLOB_KEY = os.environ.get("BLOB_KEY")
+    BLOB_URL = os.environ.get("BLOB_URL")
+    OpenAiKey = OPENAI_API_KEY
+    result = "Open AI Api"
+    llm = AzureChatOpenAI(deployment_name="gpt-35-turbo1", model_name="gpt-35-turbo", openai_api_key=OpenAiKey, max_tokens=500)
+
+    text_splitter = CharacterTextSplitter()
+
+    account_url = BLOB_URL
+    shared_access_key = BLOB_KEY
+    credential = shared_access_key
+    container_name = "uploaddocs"
+
+    # Create the BlobServiceClient object
+    blob_service_client = BlobServiceClient(account_url, credential=credential)
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob="samplepdf1.pdf")
+    with open(file='samplepdf2.pdf', mode="wb") as sample_blob:
+        download_stream = blob_client.download_blob()
+        sample_blob.write(download_stream.readall())
+    print('file downloaded')
+    loader = PyPDFLoader("samplepdf2.pdf")
+
+    docs = loader.load()
+    prompt_template = """Extract Insights with bullet items:
+
+    {text}
+
+    CONCISE SUMMARY:"""
+    PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
+    chain = load_summarize_chain(llm, chain_type="map_reduce", return_intermediate_steps=False, map_prompt=PROMPT, combine_prompt=PROMPT)
+    result = chain({"input_documents": docs}, return_only_outputs=True)
+
+    print(result)
+
+    #return render_template("upload.html",result = result)
+    return result
 
 @app.route('/hello', methods=['POST'])
 def hello():

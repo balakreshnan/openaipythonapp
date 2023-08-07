@@ -1,0 +1,27 @@
+<!doctype html>
+<head>
+    <title>Hello Folks - Summarize PDF Docs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<html>
+   <body>
+     <main>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <div class="px-4 py-3 my-2 text-center">
+                <img class="d-block mx-auto mb-4" src="{{ url_for('static', filename='images/azure-icon.svg') }}" alt="Azure Logo" width="192" height="192"/>
+                <h1 class="display-6 fw-bold">Hello Folks</h1>
+                <p class="fs-5">
+                    Welcome to the PDF Summarizer!
+                </p>
+                <p class="fs-5">
+                    Please upload a PDF document to summarize.
+                </p>
+                <input type="file" name="file" id="file">
+                <input type="submit" value="Upload" name="submit">
+                <a href="/upload" class="btn btn-primary btn-lg px-4 gap-3">Upload</a>
+            </div>
+        </form>
+     </main>      
+   </body>
+</html>

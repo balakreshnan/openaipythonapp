@@ -1,0 +1,73 @@
+<!doctype html>
+<head>
+    <title>Hello Azure - Python Quickstart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<html>
+   <body>
+     <main>
+        <form action="/insightsp" method="post" enctype="multipart/form-data">
+            <div class="px-4 py-3 my-2 text-center">
+                <img class="d-block mx-auto mb-4" src="{{ url_for('static', filename='images/azure-icon.svg') }}" alt="Azure Logo" width="192" height="192"/>
+                <h1 class="display-6 fw-bold">Hello Folks</h1>
+                <p class="fs-5">
+                    Welcome to the PDF Summarizer!
+                </p>
+                <p class="fs-5">
+                    Click the button to summarize.
+                </p>
+                <input type="text" name="filename" id="filename" value="samplepdf1.pdf">
+                <input type="submit" value="Insights" name="submit" id="summarize">
+                
+            </div>
+
+            </form> 
+        </form>
+        <div class="px-4 py-3 my-2 text-center">
+            <h1 class="display-6 fw-bold">Result Shown below: </h1>
+            <p class="fs-5" id="result" style="text-align: left;">
+                <!-- {{result}} -->
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg px-4 gap-3">Back home</a>&nbsp;
+            <a href="/summaryupload" class="btn btn-primary btn-lg px-4 gap-3">Upload</a>
+            <a href="/upload" class="btn btn-primary btn-lg px-4 gap-3">Summary</a>
+          </div>
+     </main>  
+     <script lang="javascript">
+
+        function textToList(text) {
+            const val = text.split('\n') // break each line into an item
+                .map(item => item.replace(/^[ \t]*[-*][ \t]+/g, '')) // get rid of starting - or *
+                .map(item => item.trim()) // get rid of whitespace
+                .filter(item => item.length > 0) // filter lines that are empty
+                .map(item => `<li>${item}</li>`); // convert to list item
+            return `<ul>${val.join('\n')}</ul>`;
+        }
+
+        function disablesummarize()
+        {
+            document.getElementById("summarize").disabled = true;
+            document.getElementById("summarize").value = "Processing...";
+            var form = document.getElementById("summarize").form;
+            console.log("Button disabled", form);
+            //form.submit();
+            //document.getElementById("summarize").submit();
+            fetch('/summary', {method: 'POST', body: new FormData(form)}).then(function(response) {
+                console.log(response);
+                return response.json();
+            }).then(function(text) {
+                console.log(text);
+                document.getElementById("summarize").disabled = false;
+                document.getElementById("summarize").value = "Insights";
+                document.getElementById("result").innerHTML = textToList(text.output_text);
+            }).catch(function(error) {
+                console.error(error);
+            });
+        }
+
+        document.getElementById("summarize").addEventListener("click", disablesummarize);
+
+    </script>     
+   </body>
+</html>
