@@ -99,7 +99,36 @@ def index():
 
 #     return result
 
+@app.route('/summaryupload', methods=['POST', 'GET'])
+def summaryupload():
+   print('Request for index page received')
+   return render_template('summary.html')
+
 #https://github.com/Azure-Samples/msdocs-python-flask-webapp-quickstart
+
+@app.route('/upload', methods=['POST', 'GET'])
+def upload():
+    if request.method == 'POST':
+        print('Request for upload page received')
+        BLOB_KEY = os.environ.get("BLOB_KEY")
+        BLOB_URL = os.environ.get("BLOB_URL")
+        f = request.files['file']
+        #f.save(secure_filename(f.filename))
+        f.save("samplepdf1.pdf")
+        account_url = BLOB_URL
+        shared_access_key = BLOB_KEY
+        credential = shared_access_key
+        container_name = "uploaddocs"
+
+        # Create the BlobServiceClient object
+        blob_service_client = BlobServiceClient(account_url, credential=credential)
+        container_client = blob_service_client.get_container_client(container=container_name)
+        with open(file='samplepdf1.pdf', mode="rb") as data:
+            blob_client = container_client.upload_blob(name="samplepdf1.pdf", data=data, overwrite=True)
+        print('file uploaded successfully')
+        return render_template('upload.html')
+    else:
+        return render_template('upload.html')
 
 @app.route('/summary', methods=['POST', 'GET'])
 def summary(filename="samplepdf1.pdf"):
@@ -147,7 +176,9 @@ def summary(filename="samplepdf1.pdf"):
     chain = load_summarize_chain(llm, chain_type="map_reduce", return_intermediate_steps=False, map_prompt=PROMPT, combine_prompt=PROMPT)
     result = chain({"input_documents": docs}, return_only_outputs=True)
 
-    return result
+    print(result)
+
+    return render_template("upload.html",result = result)
 
 @app.route('/hello', methods=['POST'])
 def hello():
