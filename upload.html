@@ -1,0 +1,38 @@
+<!doctype html>
+<head>
+    <title>Hello Azure - Python Quickstart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<html>
+   <body>
+     <main>
+        <form action="/summary" method="post" enctype="multipart/form-data">
+            <div class="px-4 py-3 my-2 text-center">
+                <img class="d-block mx-auto mb-4" src="{{ url_for('static', filename='images/azure-icon.svg') }}" alt="Azure Logo" width="192" height="192"/>
+                <h1 class="display-6 fw-bold">Hello Folks</h1>
+                <p class="fs-5">
+                    Welcome to the PDF Summarizer!
+                </p>
+                <p class="fs-5">
+                    Click the button to summarize.
+                </p>
+                <input type="text" name="filename" id="filename" value="samplepdf1.pdf">
+                <input type="submit" value="Summarize" name="submit">
+                <a href="/summaryupload" class="btn btn-primary btn-lg px-4 gap-3">Upload</a>
+            </div>
+
+            </form> 
+        </form>
+        <div class="px-4 py-3 my-2 text-center">
+            <img class="d-block mx-auto mb-4" src="{{ url_for('static', filename='images/azure-icon.svg') }}" alt="Azure Logo" width="192" height="192"/>
+            <!-- <img  src="/docs/5.1/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57"> -->
+            <h1 class="display-6 fw-bold">Hello </h1>
+            <p class="fs-5">
+                {{result}}
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg px-4 gap-3">Back home</a>
+          </div>
+     </main>      
+   </body>
+</html>
