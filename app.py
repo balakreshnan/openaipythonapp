@@ -34,6 +34,7 @@ from azure.storage.blob import BlobServiceClient, ContainerClient, BlobBlock, Bl
 from os import environ, path
 from dotenv import load_dotenv
 from flask import request
+import time
 
 app = Flask(__name__)
 
@@ -150,7 +151,8 @@ def summary(filename="samplepdf1.pdf"):
     result = "Open AI Api"
     llm = AzureChatOpenAI(deployment_name="gpt-35-turbo1", model_name="gpt-35-turbo", openai_api_key=OpenAiKey, max_tokens=500)
 
-    text_splitter = CharacterTextSplitter()
+    #text_splitter = CharacterTextSplitter()
+    text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=3000,chunk_overlap=0,separator="\n\n")
 
     account_url = BLOB_URL
     shared_access_key = BLOB_KEY
@@ -165,6 +167,7 @@ def summary(filename="samplepdf1.pdf"):
         sample_blob.write(download_stream.readall())
     print('file downloaded')
     loader = PyPDFLoader("samplepdf2.pdf")
+    start = time.time()
 
     docs = loader.load()
     prompt_template = """Summarize with bullet items:
@@ -174,9 +177,13 @@ def summary(filename="samplepdf1.pdf"):
     CONCISE SUMMARY:"""
     PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
     chain = load_summarize_chain(llm, chain_type="map_reduce", return_intermediate_steps=False, map_prompt=PROMPT, combine_prompt=PROMPT)
-    result = chain({"input_documents": docs}, return_only_outputs=True)
+    result = chain({"input_documents": text_splitter.split_documents(docs)}, return_only_outputs=True)
+    end = time.time()
 
     print(result)
+    print(end - start)
+    elapsed_time = end - start
+    print('Execution time:', elapsed_time, 'seconds')
 
     #return render_template("upload.html",result = result)
     return result
@@ -206,7 +213,8 @@ def insightsp(filename="samplepdf1.pdf"):
     result = "Open AI Api"
     llm = AzureChatOpenAI(deployment_name="gpt-35-turbo1", model_name="gpt-35-turbo", openai_api_key=OpenAiKey, max_tokens=500)
 
-    text_splitter = CharacterTextSplitter()
+    #text_splitter = CharacterTextSplitter()
+    text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=3000,chunk_overlap=0,separator="\n\n")
 
     account_url = BLOB_URL
     shared_access_key = BLOB_KEY
@@ -221,6 +229,7 @@ def insightsp(filename="samplepdf1.pdf"):
         sample_blob.write(download_stream.readall())
     print('file downloaded')
     loader = PyPDFLoader("samplepdf2.pdf")
+    start = time.time()
 
     docs = loader.load()
     prompt_template = """Extract Insights with bullet items:
@@ -230,9 +239,13 @@ def insightsp(filename="samplepdf1.pdf"):
     CONCISE SUMMARY:"""
     PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
     chain = load_summarize_chain(llm, chain_type="map_reduce", return_intermediate_steps=False, map_prompt=PROMPT, combine_prompt=PROMPT)
-    result = chain({"input_documents": docs}, return_only_outputs=True)
+    result = chain({"input_documents": text_splitter.split_documents(docs)}, return_only_outputs=True)
 
     print(result)
+    end = time.time()
+    print(end - start)
+    elapsed_time = end - start
+    print('Execution time:', elapsed_time, 'seconds')
 
     #return render_template("upload.html",result = result)
     return result
