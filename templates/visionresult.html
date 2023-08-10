@@ -1,0 +1,22 @@
+<!doctype html>
+<head>
+    <title>Hello Folks - Summarize PDF Docs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<html>
+   <body>
+     <main>
+        <div class="px-4 py-3 my-2 text-center">
+            <h1 class="display-6 fw-bold">Result Shown below: </h1>
+            <p class="fs-5" id="result" style="text-align: left;">
+                {{result}}
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg px-4 gap-3">Back home</a>&nbsp;
+            <a href="/summaryupload" class="btn btn-primary btn-lg px-4 gap-3">Upload</a>&nbsp;
+            <a href="/insights" class="btn btn-primary btn-lg px-4 gap-3">Insights</a>
+          </div>
+     </main>    
+
+   </body>
+</html>

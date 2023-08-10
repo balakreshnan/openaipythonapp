@@ -35,6 +35,7 @@ from os import environ, path
 from dotenv import load_dotenv
 from flask import request
 import time
+import azure.ai.vision as visionsdk
 
 app = Flask(__name__)
 
@@ -249,6 +250,74 @@ def insightsp(filename="samplepdf1.pdf"):
 
     #return render_template("upload.html",result = result)
     return result
+
+@app.route('/vision', methods=['POST', 'GET'])
+def visionupload():
+   print('Request for index page received')
+   return render_template('vision.html')
+
+@app.route('/imageprocessing', methods=['POST', 'GET'])
+def imageprocessing():
+    if request.method == 'POST':
+        print('Request for upload page received')
+        BLOB_KEY = os.environ.get("BLOB_KEY")
+        BLOB_URL = os.environ.get("BLOB_URL")
+        visionendpoint = os.environ.get("visionendpoint")
+        visionkey = os.environ.get("visionkey")
+        f = request.files['file']
+        #f.save(secure_filename(f.filename))
+        f.save("image1.png")
+        account_url = BLOB_URL
+        shared_access_key = BLOB_KEY
+        credential = shared_access_key
+        container_name = "uploadimage"
+        result = ""
+
+        # Create the BlobServiceClient object
+        blob_service_client = BlobServiceClient(account_url, credential=credential)
+        container_client = blob_service_client.get_container_client(container=container_name)
+        with open(file='image1.png', mode="rb") as data:
+            blob_client = container_client.upload_blob(name="image1.png", data=data, overwrite=True)
+        print('file uploaded successfully')
+        service_options = visionsdk.VisionServiceOptions(visionendpoint, visionkey)
+        vision_source = visionsdk.VisionSource(filename="image1.png")
+        analysis_options = visionsdk.ImageAnalysisOptions()
+        analysis_options.features = (
+            visionsdk.ImageAnalysisFeature.CROP_SUGGESTIONS |
+            visionsdk.ImageAnalysisFeature.CAPTION |
+            visionsdk.ImageAnalysisFeature.DENSE_CAPTIONS |
+            visionsdk.ImageAnalysisFeature.OBJECTS |
+            visionsdk.ImageAnalysisFeature.PEOPLE |
+            visionsdk.ImageAnalysisFeature.TEXT |
+            visionsdk.ImageAnalysisFeature.TAGS
+        )
+        #analysis_options.cropping_aspect_ratios = [0.9, 1.33]
+        analysis_options.language = "en"
+        analysis_options.model_version = "latest"
+        analysis_options.gender_neutral_caption = True
+        # Create the image analyzer object
+        image_analyzer = visionsdk.ImageAnalyzer(service_options, vision_source, analysis_options)
+        print()
+        print(" Please wait for image analysis results...")
+        print()
+        result1 = image_analyzer.analyze()
+        result_details = visionsdk.ImageAnalysisResultDetails.from_result(result1)
+        result = "image analysis result:"
+        print(result_details)
+        #result = "Image Analysis Result:"
+        #if result.reason == visionsdk.ImageAnalysisResultReason.ANALYZED:
+        #    result = result1
+        print(" Result details:")
+        print("   Image ID: {}".format(result_details.image_id))
+        print("   Result ID: {}".format(result_details.result_id))
+        print("   Connection URL: {}".format(result_details.connection_url))
+        print("   JSON result: {}".format(result_details.json_result))    
+        result = result_details.json_result 
+
+        return result
+    else:
+        return render_template('vision.html', result = "Error in processing image")
+
 
 @app.route('/hello', methods=['POST'])
 def hello():
